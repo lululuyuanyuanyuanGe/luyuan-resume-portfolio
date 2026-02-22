@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════
    LUYUAN GE — HACKER PORTFOLIO SCRIPTS
-   Feature Set: Matrix, Decryption, Tilt, HUD
+   Feature Set: Matrix, Decryption, Tilt, HUD, Cursor
    ═══════════════════════════════════════════ */
 
 (function () {
@@ -153,25 +153,157 @@
     });
   }
 
-  // ── 4. HUD System Monitor ──
-  function initHUD() {
-    const timeEl = document.getElementById('hudTime');
-    const memEl = document.getElementById('hudMem');
-    
-    // Time
-    setInterval(() => {
-      const now = new Date();
-      timeEl.innerText = now.toISOString().split('T')[1].split('.')[0] + ' UTC';
-    }, 1000);
+  // ── 4. Custom Cursor ──
+  function initCursor() {
+    const cursor = document.getElementById('customCursor');
+    if (!cursor) return;
 
-    // Simulated Memory Usage
-    setInterval(() => {
-      const mem = Math.floor(Math.random() * 20) + 30; // 30-50%
-      memEl.innerText = mem + '%';
-    }, 2000);
+    let mouseX = 0;
+    let mouseY = 0;
+    let cursorX = 0;
+    let cursorY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    // Smooth animation loop
+    function animateCursor() {
+      const dx = mouseX - cursorX;
+      const dy = mouseY - cursorY;
+      
+      // Interpolate for smooth trailing effect
+      cursorX += dx * 0.15;
+      cursorY += dy * 0.15;
+      
+      cursor.style.left = `${cursorX}px`;
+      cursor.style.top = `${cursorY}px`;
+      
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    // Hover effects on clickable elements
+    const links = document.querySelectorAll('a, button, .project-card, .timeline__card');
+    links.forEach(link => {
+      link.addEventListener('mouseenter', () => document.body.classList.add('hover-active'));
+      link.addEventListener('mouseleave', () => document.body.classList.remove('hover-active'));
+    });
   }
 
-  // ── 5. Standard Animations (GSAP) ──
+  // ── 5. HUD System Monitor ──
+  function initHUD() {
+    const timeEl = document.getElementById('hudTime');
+    const pingEl = document.getElementById('hudPing');
+    
+    // Time (Eastern Standard Time)
+    const timeFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+
+    setInterval(() => {
+      const now = new Date();
+      timeEl.innerText = timeFormatter.format(now) + ' EST';
+    }, 1000);
+
+    // Simulated Network Latency
+    setInterval(() => {
+      const ping = Math.floor(Math.random() * 15) + 5; // 5-20ms
+      pingEl.innerText = ping + 'ms';
+    }, 1500);
+  }
+
+  // ── 6. Interactive CLI ──
+  function initCLI() {
+    const input = document.getElementById('cliInput');
+    const history = document.getElementById('cliHistory');
+    if (!input || !history) return;
+
+    // Default startup message
+    const welcome = document.createElement('div');
+    welcome.className = 'cli-line info';
+    welcome.innerHTML = '>> SYSTEM INITIALIZED. TYPE <span style="color:var(--text-bright)">help</span> FOR COMMANDS.';
+    history.appendChild(welcome);
+
+    const commands = {
+      help: "Available commands: help, clear, goto [section], date, whoami, ls, cat [file]",
+      clear: () => { history.innerHTML = ''; return null; },
+      whoami: "guest@luyuange.sys (Level 1 Access)",
+      ls: "about/  experience/  projects/  skills/  contact/  resume.pdf",
+      date: () => new Date().toLocaleString(),
+      "cat resume.pdf": "Error: Binary file. Please use the GUI link to download.",
+      "goto about": () => document.getElementById('about').scrollIntoView({ behavior: 'smooth' }),
+      "goto experience": () => document.getElementById('experience').scrollIntoView({ behavior: 'smooth' }),
+      "goto projects": () => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' }),
+      "goto skills": () => document.getElementById('skills').scrollIntoView({ behavior: 'smooth' }),
+      "goto contact": () => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' }),
+    };
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = input.value.trim();
+        if (!val) return;
+
+        // Add command to history
+        const cmdLine = document.createElement('div');
+        cmdLine.className = 'cli-line';
+        cmdLine.innerHTML = `<span style="color:var(--green)">guest@luyuange:~$</span> ${val}`;
+        history.appendChild(cmdLine);
+
+        // Process command
+        let response = null;
+        if (commands[val]) {
+          response = typeof commands[val] === 'function' ? commands[val]() : commands[val];
+        } else if (val.startsWith('goto ')) {
+          const section = val.split(' ')[1];
+          const target = document.getElementById(section);
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+            response = `Navigating to ${section}...`;
+          } else {
+            response = `Directory '${section}' not found.`;
+          }
+        } else if (val.startsWith('cat ')) {
+           response = `Access Denied: File '${val.split(' ')[1]}' is encrypted.`;
+        } else {
+          response = `Command not found: ${val}. Type 'help' for options.`;
+        }
+
+        if (response) {
+          const resLine = document.createElement('div');
+          resLine.className = 'cli-line info';
+          resLine.textContent = response;
+          history.appendChild(resLine);
+        }
+
+        // Scroll to bottom
+        history.scrollTop = history.scrollHeight;
+        input.value = '';
+      }
+    });
+  }
+
+  // ── 7. Sonar Pulse Effect ──
+  function initSonar() {
+    document.addEventListener('click', (e) => {
+      const pulse = document.createElement('div');
+      pulse.className = 'sonar-pulse';
+      pulse.style.left = `${e.clientX}px`;
+      pulse.style.top = `${e.clientY}px`;
+      document.body.appendChild(pulse);
+      
+      setTimeout(() => {
+        pulse.remove();
+      }, 600);
+    });
+  }
+
+  // ── 8. Standard Animations (GSAP) ──
   function initGSAP() {
      // Typewriter for Hero Name
     gsap.to("#typewriter", {
@@ -203,7 +335,10 @@
     initMatrix();
     initDecryption();
     initTilt();
+    initCursor();
     initHUD();
+    initCLI();
+    initSonar();
     initGSAP();
     
     // Nav Logic
