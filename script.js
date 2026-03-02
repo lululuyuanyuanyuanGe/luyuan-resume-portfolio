@@ -231,12 +231,22 @@
     history.appendChild(welcome);
 
     const commands = {
-      help: "Available commands: help, clear, goto [section], date, whoami, ls, cat [file]",
+      help: "Available commands: help, clear, goto [section], date, whoami, ls, cat [file], luyuan",
       clear: () => { history.innerHTML = ''; return null; },
       whoami: "guest@luyuange.sys (Level 1 Access)",
-      ls: "about/  experience/  projects/  skills/  contact/  resume.pdf",
+      ls: "about/  experience/  projects/  skills/  contact/  luyuanGe.pdf",
       date: () => new Date().toLocaleString(),
       "cat resume.pdf": "Error: Binary file. Please use the GUI link to download.",
+      "cat luyuanGe.pdf": "Error: Binary file. Please use the GUI link or type 'luyuan' to download.",
+      luyuan: () => {
+        const link = document.createElement('a');
+        link.href = 'luyuanGe.pdf';
+        link.download = 'luyuanGe.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return "Downloading luyuanGe.pdf...";
+      },
       "goto about": () => document.getElementById('about').scrollIntoView({ behavior: 'smooth' }),
       "goto experience": () => document.getElementById('experience').scrollIntoView({ behavior: 'smooth' }),
       "goto projects": () => document.getElementById('projects').scrollIntoView({ behavior: 'smooth' }),
